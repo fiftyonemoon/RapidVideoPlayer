@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".VideoPlayer">
+    tools:context=".RapidVideoPlayer">
 
     <VideoView
         android:id="@+id/videoView"
@@ -51,7 +51,7 @@
             android:layout_height="wrap_content"
             android:padding="16dp"
             android:src="@drawable/ic_drop_down"
-            android:background="?attr/selectableItemBackground"
+            android:background="?attr/selectableItemBackgroundBorderless"
             app:layout_constraintEnd_toStartOf="@id/ivMore"
             app:layout_constraintTop_toTopOf="parent"
             android:contentDescription="@string/more_functions" />
@@ -129,34 +129,87 @@
         android:id="@+id/bottomPanel"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@drawable/black_gradient_bottom_top"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:background="@drawable/black_gradient_bottom_top">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
-        <TextView
-            android:id="@+id/tvCount"
+        <ImageView
+            android:id="@+id/ivLock"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="16dp"
-            tools:text="00:17"
-            android:textColor="@color/white"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="16dp"
+            android:src="@drawable/ic_lock"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/ivPrev"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/ivLock" />
+            tools:ignore="ContentDescription" />
 
-        <ProgressBar
-            android:id="@+id/progressBar"
+        <ImageView
+            android:id="@+id/ivPrev"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="16dp"
+            android:src="@drawable/ic_previous"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/ivPlayPause"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/ivLock"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/ivPlayPause"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="16dp"
+            android:src="@drawable/ic_play"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/ivNext"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/ivPrev"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/ivNext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="16dp"
+            android:src="@drawable/ic_next"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/ivRatio"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/ivPlayPause"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/ivRatio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="16dp"
+            android:src="@drawable/ic_ratio"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/ivNext"
+            tools:ignore="ContentDescription" />
+
+        <SeekBar
+            android:id="@+id/seekBar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            tools:progress="50"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-            app:layout_constraintStart_toEndOf="@+id/tvCount"
+            app:layout_constraintBottom_toBottomOf="@+id/tvDuration"
             app:layout_constraintEnd_toStartOf="@id/tvDuration"
+            app:layout_constraintStart_toEndOf="@+id/tvCount"
             app:layout_constraintTop_toTopOf="@+id/tvCount"
-            app:layout_constraintBottom_toBottomOf="@+id/tvDuration" />
+            tools:progress="50" />
 
         <TextView
             android:id="@+id/tvDuration"
@@ -164,68 +217,21 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp"
-            tools:text="04:12"
             android:textColor="@color/white"
+            app:layout_constraintBottom_toTopOf="@id/ivRatio"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/ivRatio" />
+            tools:text="04:12" />
 
-        <ImageView
-            android:id="@+id/ivLock"
+        <TextView
+            android:id="@+id/tvCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:src="@drawable/ic_lock"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            tools:ignore="ContentDescription"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="16dp"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toTopOf="@id/ivLock"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
-
-        <ImageView
-            android:id="@+id/ivPrev"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_previous"
-            android:padding="16dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            tools:ignore="ContentDescription"
-            app:layout_constraintStart_toEndOf="@+id/ivLock"
-            app:layout_constraintEnd_toStartOf="@+id/ivPlay"
-            app:layout_constraintBottom_toBottomOf="parent" />
-
-        <ImageView
-            android:id="@+id/ivPlay"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_play"
-            android:padding="16dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            tools:ignore="ContentDescription"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
-
-        <ImageView
-            android:id="@+id/ivNext"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:src="@drawable/ic_next"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            tools:ignore="ContentDescription"
-            app:layout_constraintEnd_toStartOf="@+id/ivRatio"
-            app:layout_constraintStart_toEndOf="@+id/ivPlay"
-            app:layout_constraintBottom_toBottomOf="parent" />
-
-        <ImageView
-            android:id="@+id/ivRatio"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:src="@drawable/ic_ratio"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            tools:ignore="ContentDescription"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            tools:text="00:17" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

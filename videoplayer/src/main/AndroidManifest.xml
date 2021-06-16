@@ -3,7 +3,7 @@
     package="com.fom.videoplayer">
 
     <application>
-        <activity android:name=".VideoPlayer" />
+        <activity android:name=".RapidVideoPlayer" />
     </application>
 
 </manifest>

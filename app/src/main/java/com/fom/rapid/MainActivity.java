@@ -2,10 +2,9 @@ package com.fom.rapid;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
 import android.os.Bundle;
 
-import com.fom.videoplayer.VideoPlayer;
+import com.fom.videoplayer.assistant.RapidVideo;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -14,7 +13,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        startActivity(new Intent(this, VideoPlayer.class));
+        String path = "android.resource://" + getPackageName() + "/" + R.raw.sample;
+        RapidVideo.videoBuilder().setVideoUri(path).start(this);
 
     }
 }
