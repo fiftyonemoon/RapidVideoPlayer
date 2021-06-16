@@ -3,7 +3,9 @@
     package="com.fom.videoplayer">
 
     <application>
-        <activity android:name=".VideoPlayer" />
+        <activity
+            android:name=".VideoPlayer"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 
 </manifest>
