@@ -86,7 +86,7 @@
             android:textColor="@color/white"
             android:textStyle="bold"
             tools:text="25%"
-            android:textSize="22sp"
+            android:textSize="28sp"
             tools:ignore="ContentDescription"
             android:visibility="gone"/>
 

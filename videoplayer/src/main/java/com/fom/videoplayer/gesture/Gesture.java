@@ -51,7 +51,7 @@ public class Gesture {
 
         private GestureListener listener;
         final int minD = 50;
-        float dx, dy, ux, uy;
+        float dx, dy, mx, my, nx, ny;
         private long millis;
         private boolean isDoubleTapConfirmed;
         private boolean isMoving;
@@ -122,14 +122,13 @@ public class Gesture {
                 case MotionEvent.ACTION_MOVE:
 
                     //get x and y position on move
-                    ux = event.getX();
-                    uy = event.getY();
+                    mx = event.getX();
+                    my = event.getY();
 
-                    float swipeX = dx - ux;
-                    float swipeY = dy - uy;
+                    float swipeX = dx - mx;
+                    float swipeY = dy - my;
 
-                    //horizontal swipe
-                    if (Math.abs(swipeX) > Math.abs(swipeY)) {
+                    if (Math.abs(swipeX) > Math.abs(swipeY)) { //horizontal swipe
 
                         // if vertical swipe is active avoid horizontal swipe
                         if (isVerticalSwipe) break;
@@ -139,6 +138,12 @@ public class Gesture {
                         if (isMoving) { // if horizontal swipe conditions valid
 
                             isHorizontalSwipe = true;
+
+                            // break when current position (swipeX) is same as previous position (nx),
+                            // in simple terms user stop moving but still keep in touch
+                            if (nx == swipeX) break;
+
+                            nx = swipeX;  // store current position as new X value
 
                             if (swipeX < 0) { // left to right swipe
 
@@ -161,16 +166,26 @@ public class Gesture {
                         // if horizontal swipe is active avoid vertical swipe
                         if (isHorizontalSwipe) break;
 
-                        isMoving = Math.abs(swipeY) > minD; // if swipe value more than default min distance
+                        isMoving = Math.abs(swipeY) > 0; // if swipe value more than default min distance
 
                         if (isMoving) { // if vertical swipe conditions valid
 
-                            isVerticalSwipe = true;
+                            isVerticalSwipe = true; // set vertical swipe enable
 
+                            // break when current position (swipeY) is same as previous position (ny),
+                            // in simple terms user stop moving but still keep in touch
+                            if (ny == swipeY) break;
+
+                            ny = swipeY; // store current position as new Y value
+
+                            // get device width
                             float width = v.getContext().getResources().getDisplayMetrics().widthPixels;
 
                             if (swipeY < 0) { // top to bottom swipe
 
+                                // if dx value is more than half of total screen width it means
+                                // user touch right hand side of the screen, vice-versa left hand side
+                                // if dx less than total screen width
                                 if (dx > (width / 2))
                                     onTopToBottomSwipeRight((int) swipeY);
                                 else

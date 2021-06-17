@@ -13,8 +13,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        String path = "android.resource://" + getPackageName() + "/" + R.raw.sample;
+        String path = "android.resource://" + getPackageName() + "/" + R.raw.sample2;
         RapidVideo.videoBuilder().setVideoUri(path).start(this);
+        finish();
 
     }
+
 }

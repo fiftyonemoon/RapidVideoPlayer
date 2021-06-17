@@ -3,6 +3,8 @@ package com.fom.videoplayer.assistant;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Looper;
+import android.view.View;
 import android.widget.SeekBar;
 
 import com.fom.videoplayer.R;
@@ -15,7 +17,7 @@ public class VideoHandler<handler> implements MediaPlayer.OnPreparedListener, Se
     private static VideoHandler<Object> objectVideoHandler;
     private ActivityVideoPlayerBinding binding;
     private Uri uri;
-    private float volume = 15f;
+    private int volume = 100;
 
     public static VideoHandler<Object> videoHandler() {
         return objectVideoHandler == null ? objectVideoHandler = new VideoHandler<>() : objectVideoHandler;
@@ -42,7 +44,6 @@ public class VideoHandler<handler> implements MediaPlayer.OnPreparedListener, Se
         mediaPlayer = mp;
         mediaPlayer.setOnSeekCompleteListener(this);
         binding.seekBar.setMax(binding.videoView.getDuration());
-        setVolume(volume);
         updateDuration();
         start();
     }
@@ -61,11 +62,6 @@ public class VideoHandler<handler> implements MediaPlayer.OnPreparedListener, Se
         updatePlayPauseButton();
     }
 
-    public void stop() {
-        pause();
-        updateDuration();
-    }
-
     public void seekTo(int mSec) {
 
         binding.videoView.seekTo(mSec);
@@ -76,12 +72,15 @@ public class VideoHandler<handler> implements MediaPlayer.OnPreparedListener, Se
         }
     }
 
-    public void setVolume(float volume) {
-        this.volume = volume;
+    public void setVolume(float volume, boolean isIncrease) {
         mediaPlayer.setVolume(volume, volume);
+        updateDisplayMessage();
+
+        if (isIncrease && this.volume != 100) this.volume++;
+        else if (!isIncrease && this.volume != 0) this.volume--;
     }
 
-    public float getVolume(){
+    public int getVolume() {
         return volume;
     }
 
@@ -97,6 +96,23 @@ public class VideoHandler<handler> implements MediaPlayer.OnPreparedListener, Se
     private void updateSeekBar() {
         binding.seekBar.setProgress(binding.videoView.getCurrentPosition());
     }
+
+    private void updateDisplayMessage() {
+        String percentage = volume + "%";
+        binding.tvPercentage.setText(percentage);
+        binding.tvPercentage.setVisibility(View.VISIBLE);
+
+        messageHandler.removeCallbacks(messageRunnable);
+        messageHandler.postDelayed(messageRunnable, 500);
+    }
+
+    private final Handler messageHandler = new Handler(Looper.myLooper());
+    private final Runnable messageRunnable = new Runnable() {
+        @Override
+        public void run() {
+            binding.tvPercentage.setVisibility(View.GONE);
+        }
+    };
 
     private final Handler handler = new Handler();
     private final Runnable runnable = new Runnable() {
