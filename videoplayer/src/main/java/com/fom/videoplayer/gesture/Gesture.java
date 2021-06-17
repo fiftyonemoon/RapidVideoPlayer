@@ -17,16 +17,33 @@ import android.view.View;
 public class Gesture {
 
     /**
-     * Builder constructor.
+     * Gesture listeners.
      */
-    public static Builder<Object> build() {
-        return new Builder<>();
+    public interface GestureListener {
+        void onDoubleTap();
+
+        void onSingleTap();
+
+        void onLeftToRightSwipe(int value);
+
+        void onRightToLeftSwipe(int value);
+
+        void onTopToBottomSwipe(int value);
+
+        void onBottomToTopSwipe(int value);
     }
 
     /**
-     * Builder class to detect gesture.
+     * Detector constructor.
      */
-    public static class Builder<builder> extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener {
+    public static Detector<Object> detect() {
+        return new Detector<>();
+    }
+
+    /**
+     * A class to detect touch movement.
+     */
+    public static class Detector<detector> extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener {
 
         private GestureListener listener;
         final int minD = 50;
@@ -37,21 +54,7 @@ public class Gesture {
         private boolean isHorizontalSwipe;
         private boolean isVerticalSwipe;
 
-        public interface GestureListener {
-            void onDoubleTap();
-
-            void onSingleTap();
-
-            void onLeftToRightSwipe(int value);
-
-            void onRightToLeftSwipe(int value);
-
-            void onTopToBottomSwipe(int value);
-
-            void onBottomToTopSwipe(int value);
-        }
-
-        public Builder<builder> set(View view) {
+        public Detector<detector> view(View view) {
             view.setOnTouchListener(this);
             return this;
         }
@@ -69,27 +72,19 @@ public class Gesture {
         }
 
         public void onLeftToRightSwipe(int value) {
-            if (listener != null) {
-                listener.onLeftToRightSwipe(value);
-            }
+            if (listener != null) listener.onLeftToRightSwipe(value);
         }
 
         public void onRightToLeftSwipe(int value) {
-            if (listener != null) {
-                listener.onRightToLeftSwipe(value);
-            }
+            if (listener != null) listener.onRightToLeftSwipe(value);
         }
 
         public void onTopToBottomSwipe(int value) {
-            if (listener != null) {
-                listener.onTopToBottomSwipe(value);
-            }
+            if (listener != null) listener.onTopToBottomSwipe(value);
         }
 
         public void onBottomToTopSwipe(int value) {
-            if (listener != null) {
-                listener.onBottomToTopSwipe(value);
-            }
+            if (listener != null) listener.onBottomToTopSwipe(value);
         }
 
         @SuppressLint("ClickableViewAccessibility")
@@ -213,4 +208,5 @@ public class Gesture {
             }
         };
     }
+
 }

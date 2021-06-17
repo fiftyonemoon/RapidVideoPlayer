@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".VideoPlayer">
+    tools:context=".RapidVideoPlayer">
 
     <VideoView
         android:id="@+id/videoView"
@@ -199,9 +199,8 @@
             app:layout_constraintStart_toEndOf="@+id/ivNext"
             tools:ignore="ContentDescription" />
 
-        <ProgressBar
-            android:id="@+id/progressBar"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        <SeekBar
+            android:id="@+id/seekBar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
