@@ -28,9 +28,13 @@ public class Gesture {
 
         void onRightToLeftSwipe(int value);
 
-        void onTopToBottomSwipe(int value);
+        void onTopToBottomSwipeRight(int value);
 
-        void onBottomToTopSwipe(int value);
+        void onTopToBottomSwipeLeft(int value);
+
+        void onBottomToTopSwipeRight(int value);
+
+        void onBottomToTopSwipeLeft(int value);
     }
 
     /**
@@ -79,12 +83,20 @@ public class Gesture {
             if (listener != null) listener.onRightToLeftSwipe(value);
         }
 
-        public void onTopToBottomSwipe(int value) {
-            if (listener != null) listener.onTopToBottomSwipe(value);
+        public void onTopToBottomSwipeRight(int value) {
+            if (listener != null) listener.onTopToBottomSwipeRight(value);
         }
 
-        public void onBottomToTopSwipe(int value) {
-            if (listener != null) listener.onBottomToTopSwipe(value);
+        public void onTopToBottomSwipeLeft(int value) {
+            if (listener != null) listener.onTopToBottomSwipeLeft(value);
+        }
+
+        public void onBottomToTopSwipeRight(int value) {
+            if (listener != null) listener.onBottomToTopSwipeRight(value);
+        }
+
+        public void onBottomToTopSwipeLeft(int value) {
+            if (listener != null) listener.onBottomToTopSwipeLeft(value);
         }
 
         @SuppressLint("ClickableViewAccessibility")
@@ -101,6 +113,7 @@ public class Gesture {
 
                     millis = System.currentTimeMillis();
 
+                    // get x and y position on touch
                     dx = event.getX();
                     dy = event.getY();
 
@@ -108,6 +121,7 @@ public class Gesture {
 
                 case MotionEvent.ACTION_MOVE:
 
+                    //get x and y position on move
                     ux = event.getX();
                     uy = event.getY();
 
@@ -117,11 +131,12 @@ public class Gesture {
                     //horizontal swipe
                     if (Math.abs(swipeX) > Math.abs(swipeY)) {
 
+                        // if vertical swipe is active avoid horizontal swipe
                         if (isVerticalSwipe) break;
 
-                        isMoving = Math.abs(swipeX) > minD;
+                        isMoving = Math.abs(swipeX) > minD; // if swipe value more than default min distance
 
-                        if (isMoving) {
+                        if (isMoving) { // if horizontal swipe conditions valid
 
                             isHorizontalSwipe = true;
 
@@ -130,6 +145,7 @@ public class Gesture {
                                 onLeftToRightSwipe((int) swipeX);
                                 return true;
                             }
+
                             if (swipeX > 0) { // right to left swipe
 
                                 onRightToLeftSwipe((int) swipeX);
@@ -142,22 +158,31 @@ public class Gesture {
 
                     } else { // vertical swipe
 
+                        // if horizontal swipe is active avoid vertical swipe
                         if (isHorizontalSwipe) break;
 
-                        isMoving = Math.abs(swipeY) > minD;
+                        isMoving = Math.abs(swipeY) > minD; // if swipe value more than default min distance
 
-                        if (isMoving) {
+                        if (isMoving) { // if vertical swipe conditions valid
 
                             isVerticalSwipe = true;
 
+                            float width = v.getContext().getResources().getDisplayMetrics().widthPixels;
+
                             if (swipeY < 0) { // top to bottom swipe
 
-                                onTopToBottomSwipe((int) swipeY);
+                                if (dx > (width / 2))
+                                    onTopToBottomSwipeRight((int) swipeY);
+                                else
+                                    onTopToBottomSwipeLeft((int) swipeY);
                                 return true;
                             }
                             if (swipeY > 0) { //bottom to top swipe
 
-                                onBottomToTopSwipe((int) swipeY);
+                                if (dx > (width / 2))
+                                    onBottomToTopSwipeRight((int) swipeY);
+                                else
+                                    onBottomToTopSwipeLeft((int) swipeY);
                                 return true;
                             }
 
@@ -165,7 +190,6 @@ public class Gesture {
                             return false;
                         }
                     }
-
                     break;
 
                 case MotionEvent.ACTION_UP:

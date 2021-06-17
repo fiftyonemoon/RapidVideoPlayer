@@ -2,6 +2,8 @@ package com.fom.videoplayer;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -16,7 +18,7 @@ import com.fom.videoplayer.gesture.Gesture;
 
 public class RapidVideoPlayer extends AppCompatActivity {
 
-    private static final String TAG = RapidVideoPlayer.class.getName();
+    public static final String TAG = RapidVideoPlayer.class.getName();
     private ActivityVideoPlayerBinding binding;
 
     @Override
@@ -122,9 +124,8 @@ public class RapidVideoPlayer extends AppCompatActivity {
 
             if (BuildConfig.DEBUG) Log.d(TAG, "onLeftToRightSwipe: " + value);
 
-            int mSec = binding.videoView.getCurrentPosition() - value;
+            int mSec = binding.videoView.getCurrentPosition() - (value);
             RapidVideo.videoHandler().seekTo(mSec);
-
         }
 
         @Override
@@ -137,19 +138,78 @@ public class RapidVideoPlayer extends AppCompatActivity {
         }
 
         @Override
-        public void onTopToBottomSwipe(int value) {
-            System.out.println("top > bottom:" + value);
+        public void onTopToBottomSwipeRight(int value) {
+
+            float volume = RapidVideo.videoHandler().getVolume();
+
+            if (volume > 0 && volume <= 15) {
+                RapidVideo.videoHandler().setVolume(volume - 0.5f);
+            }
+
+            String text = "-" + volume;
+            binding.tvPercentage.setText(text);
+            binding.tvPercentage.setVisibility(View.VISIBLE);
+
+            handler.removeCallbacks(runnable);
+            handler.postDelayed(runnable, 500);
         }
 
         @Override
-        public void onBottomToTopSwipe(int value) {
-            System.out.println("bottom > top:" + value);
+        public void onTopToBottomSwipeLeft(int value) {
+
+            WindowManager.LayoutParams layout = getWindow().getAttributes();
+
+            if (layout.screenBrightness == -1) {
+                layout.screenBrightness = 0.7f;
+            } else if (layout.screenBrightness > 0.1) {
+                layout.screenBrightness = layout.screenBrightness - 0.1f;
+            }
+
+            getWindow().setAttributes(layout);
+        }
+
+        @Override
+        public void onBottomToTopSwipeRight(int value) {
+
+            float volume = RapidVideo.videoHandler().getVolume();
+
+            if (volume >= 0 && volume < 15) {
+                RapidVideo.videoHandler().setVolume(volume + 0.5f);
+            }
+
+            String text = "+" + volume;
+            binding.tvPercentage.setText(text);
+            binding.tvPercentage.setVisibility(View.VISIBLE);
+            handler.removeCallbacks(runnable);
+            handler.postDelayed(runnable, 500);
+        }
+
+        @Override
+        public void onBottomToTopSwipeLeft(int value) {
+
+            WindowManager.LayoutParams layout = getWindow().getAttributes();
+
+            if (layout.screenBrightness == -1) {
+                layout.screenBrightness = 0.7f;
+            } else if (layout.screenBrightness > 0 && layout.screenBrightness < 1) {
+                layout.screenBrightness = layout.screenBrightness + 0.1f;
+            }
+
+            getWindow().setAttributes(layout);
+        }
+    };
+
+    private Handler handler = new Handler(Looper.myLooper());
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            binding.tvPercentage.setVisibility(View.GONE);
         }
     };
 
     @Override
     protected void onStop() {
-        RapidVideo.videoHandler().stop();
+        RapidVideo.videoHandler().pause();
         super.onStop();
     }
 

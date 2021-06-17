@@ -9,11 +9,13 @@ import com.fom.videoplayer.R;
 import com.fom.videoplayer.databinding.ActivityVideoPlayerBinding;
 import com.fom.videoplayer.ui.UI;
 
-public class VideoHandler<handler> implements MediaPlayer.OnPreparedListener, SeekBar.OnSeekBarChangeListener {
+public class VideoHandler<handler> implements MediaPlayer.OnPreparedListener, SeekBar.OnSeekBarChangeListener, MediaPlayer.OnSeekCompleteListener {
 
+    private MediaPlayer mediaPlayer;
     private static VideoHandler<Object> objectVideoHandler;
     private ActivityVideoPlayerBinding binding;
     private Uri uri;
+    private float volume = 15f;
 
     public static VideoHandler<Object> videoHandler() {
         return objectVideoHandler == null ? objectVideoHandler = new VideoHandler<>() : objectVideoHandler;
@@ -37,8 +39,11 @@ public class VideoHandler<handler> implements MediaPlayer.OnPreparedListener, Se
 
     @Override
     public void onPrepared(MediaPlayer mp) {
-        updateDuration();
+        mediaPlayer = mp;
+        mediaPlayer.setOnSeekCompleteListener(this);
         binding.seekBar.setMax(binding.videoView.getDuration());
+        setVolume(volume);
+        updateDuration();
         start();
     }
 
@@ -58,16 +63,26 @@ public class VideoHandler<handler> implements MediaPlayer.OnPreparedListener, Se
 
     public void stop() {
         pause();
-        binding.videoView.stopPlayback();
-        binding.videoView.seekTo(0);
-        binding.seekBar.setProgress(0);
         updateDuration();
     }
 
     public void seekTo(int mSec) {
-        pause();
+
         binding.videoView.seekTo(mSec);
-        start();
+
+        if (!binding.videoView.isPlaying()) { // call when user seek video in pause mode
+            updateSeekBar();
+            updateDuration();
+        }
+    }
+
+    public void setVolume(float volume) {
+        this.volume = volume;
+        mediaPlayer.setVolume(volume, volume);
+    }
+
+    public float getVolume(){
+        return volume;
     }
 
     private void updatePlayPauseButton() {
@@ -79,16 +94,22 @@ public class VideoHandler<handler> implements MediaPlayer.OnPreparedListener, Se
         binding.tvCount.setText(UI.getTimeInMinSecFormat(binding.videoView.getCurrentPosition()));
     }
 
+    private void updateSeekBar() {
+        binding.seekBar.setProgress(binding.videoView.getCurrentPosition());
+    }
+
     private final Handler handler = new Handler();
     private final Runnable runnable = new Runnable() {
         @Override
         public void run() {
-            if (binding.videoView.getCurrentPosition() <= binding.videoView.getDuration()) {
-                binding.seekBar.setProgress(binding.videoView.getCurrentPosition());
-                handler.postDelayed(runnable, 100);
+
+            if (binding.videoView.isPlaying() && binding.videoView.getCurrentPosition() <= binding.videoView.getDuration()) {
+                updateSeekBar();
                 updateDuration();
+                handler.postDelayed(runnable, 100);
             } else {
-                stop();
+                // after video complete do things
+                updatePlayPauseButton();
             }
         }
     };
@@ -101,11 +122,18 @@ public class VideoHandler<handler> implements MediaPlayer.OnPreparedListener, Se
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
-        pause();
+        pause(); // pause the video on user start to seek
     }
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-        start();
+        //nothing to do
+    }
+
+    @Override
+    public void onSeekComplete(MediaPlayer mp) {
+        if (binding.videoView.isPlaying())
+            start(); // after seek complete start video at new position if video is in playing mode
+        else updateDuration(); // after seek complete update duration if video is in pause mode
     }
 }
