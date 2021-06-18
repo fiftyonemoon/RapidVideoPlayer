@@ -2,7 +2,7 @@ package com.fom.videoplayer;
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -16,7 +16,6 @@ import com.fom.videoplayer.gesture.Gesture;
 
 public class RapidVideoPlayer extends AppCompatActivity {
 
-    public static final String TAG = RapidVideoPlayer.class.getName();
     private ActivityVideoPlayerBinding binding;
 
     @Override
@@ -54,7 +53,12 @@ public class RapidVideoPlayer extends AppCompatActivity {
         String path = getIntent().getStringExtra(Constant.intent_extra_path);
         Uri uri = path == null ? getIntent().getParcelableExtra(Constant.intent_extra_uri) : Uri.parse(path);
 
-        RapidVideo.videoHandler().setBinding(binding).setVideoUri(uri).init();
+        RapidVideo.videoHandler()
+                .with(this)
+                .window(getWindow())
+                .setBinding(binding)
+                .setVideoUri(uri)
+                .init();
     }
 
     private void initializeGesture() {
@@ -119,18 +123,12 @@ public class RapidVideoPlayer extends AppCompatActivity {
 
         @Override
         public void onLeftToRightSwipe(int value) {
-
-            if (BuildConfig.DEBUG) Log.d(TAG, "onLeftToRightSwipe: " + value);
-
-            int mSec = binding.videoView.getCurrentPosition() - (value);
+            int mSec = binding.videoView.getCurrentPosition() - value; // value variable is negative, do minus so it's become positive variable
             RapidVideo.videoHandler().seekTo(mSec);
         }
 
         @Override
         public void onRightToLeftSwipe(int value) {
-
-            if (BuildConfig.DEBUG) Log.d(TAG, "onRightToLeftSwipe: " + value);
-
             int mSec = binding.videoView.getCurrentPosition() - value;
             RapidVideo.videoHandler().seekTo(mSec);
         }
@@ -138,23 +136,25 @@ public class RapidVideoPlayer extends AppCompatActivity {
         @Override
         public void onTopToBottomSwipeRight(int value) {
 
-            int volume = RapidVideo.videoHandler().getVolume();
+            int maxVolume = RapidVideo.videoHandler().getMaxVolume();
+            int percentage = RapidVideo.videoHandler().getVolumeInPercentage();
 
-            if (volume >= 0 && volume <= 100) {
-                float audioVolume = (float) (1.0d - (Math.log((double) 100 - volume) / Math.log(100.0d)));
-                RapidVideo.videoHandler().setVolume(audioVolume, false);
+            if (percentage >= 0 && percentage <= 100) {
+                int volume = (percentage * maxVolume) / 100;
+                RapidVideo.videoHandler().setVolume(volume, false);
             }
         }
 
         @Override
         public void onTopToBottomSwipeLeft(int value) {
 
+            int brightness = RapidVideo.videoHandler().getBrightness();
+
             WindowManager.LayoutParams layout = getWindow().getAttributes();
 
-            if (layout.screenBrightness == -1) {
-                layout.screenBrightness = 0.7f;
-            } else if (layout.screenBrightness > 0.1) {
-                layout.screenBrightness = layout.screenBrightness - 0.1f;
+            if (brightness >= 0 && brightness <= 100) {
+                layout.screenBrightness = (float) (1.0d - (Math.log((double) 100 - brightness) / Math.log(100.0d)));
+                RapidVideo.videoHandler().setBrightness(false);
             }
 
             getWindow().setAttributes(layout);
@@ -163,28 +163,46 @@ public class RapidVideoPlayer extends AppCompatActivity {
         @Override
         public void onBottomToTopSwipeRight(int value) {
 
-            int volume = RapidVideo.videoHandler().getVolume();
+            int maxVolume = RapidVideo.videoHandler().getMaxVolume();
+            int percentage = RapidVideo.videoHandler().getVolumeInPercentage();
 
-            if (volume >= 0 && volume <= 100) {
-                float audioVolume = (float) (1.0d - (Math.log((double) 100 - volume) / Math.log(100.0d)));
-                RapidVideo.videoHandler().setVolume(audioVolume, true);
+            if (percentage >= 0 && percentage <= 100) {
+                int volume = (percentage * maxVolume) / 100;
+                RapidVideo.videoHandler().setVolume(volume, true);
             }
         }
 
         @Override
         public void onBottomToTopSwipeLeft(int value) {
 
+            int brightness = RapidVideo.videoHandler().getBrightness();
+
             WindowManager.LayoutParams layout = getWindow().getAttributes();
 
-            if (layout.screenBrightness == -1) {
-                layout.screenBrightness = 0.7f;
-            } else if (layout.screenBrightness > 0 && layout.screenBrightness < 1) {
-                layout.screenBrightness = layout.screenBrightness + 0.1f;
+            if (brightness >= 0 && brightness <= 100) {
+                layout.screenBrightness = (float) (1.0d - (Math.log((double) 100 - brightness) / Math.log(100.0d)));
+                System.out.println(brightness + "-" + layout.screenBrightness);
+                RapidVideo.videoHandler().setBrightness(true);
             }
 
             getWindow().setAttributes(layout);
         }
     };
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_VOLUME_UP:
+                RapidVideo.videoHandler().updateStreamVolume(true);
+                return true;
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+                RapidVideo.videoHandler().updateStreamVolume(false);
+                return true;
+            default:
+                break;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 
     @Override
     protected void onStart() {
@@ -194,7 +212,7 @@ public class RapidVideoPlayer extends AppCompatActivity {
 
     @Override
     protected void onStop() {
-        RapidVideo.videoHandler().pause();
+        RapidVideo.videoHandler().stop();
         super.onStop();
     }
 

@@ -122,7 +122,7 @@
                 android:layout_marginStart="8dp"
                 android:padding="16dp"
                 android:background="@drawable/black_circle"
-                android:src="@drawable/ic_volume_on"
+                android:src="@drawable/ic_volume_high"
                 tools:ignore="ContentDescription" />
 
             <ImageView
