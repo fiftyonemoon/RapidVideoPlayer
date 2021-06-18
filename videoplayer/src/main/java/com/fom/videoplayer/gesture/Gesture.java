@@ -166,7 +166,7 @@ public class Gesture {
                         // if horizontal swipe is active avoid vertical swipe
                         if (isHorizontalSwipe) break;
 
-                        isMoving = Math.abs(swipeY) > 0; // if swipe value more than default min distance
+                        isMoving = Math.abs(swipeY) > 0; // if swipe value more than 0
 
                         if (isMoving) { // if vertical swipe conditions valid
 

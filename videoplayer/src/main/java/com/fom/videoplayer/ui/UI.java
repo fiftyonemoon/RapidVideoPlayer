@@ -27,4 +27,8 @@ public class UI {
                 TimeUnit.MILLISECONDS.toMinutes(value),
                 TimeUnit.MILLISECONDS.toSeconds(value) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(value)));
     }
+
+    public static float getAbsFloatValueForBrightness(int value){
+        return (float) (1.0d - (Math.log((double) 100 - value) / Math.log(100.0d)));
+    }
 }

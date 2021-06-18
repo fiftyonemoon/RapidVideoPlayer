@@ -1,5 +1,6 @@
 package com.fom.videoplayer.assistant;
 
+import android.app.Activity;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -8,20 +9,19 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.SeekBar;
 
 import com.fom.videoplayer.R;
 import com.fom.videoplayer.databinding.ActivityVideoPlayerBinding;
+import com.fom.videoplayer.ui.Preference;
 import com.fom.videoplayer.ui.UI;
 
 import androidx.annotation.RequiresApi;
 
-public class VideoHandler<handler> implements MediaPlayer.OnPreparedListener, SeekBar.OnSeekBarChangeListener, MediaPlayer.OnSeekCompleteListener {
+public class VideoHandler<handler> {
 
-    private Context context;
-    private Window window;
+    private Activity activity;
     private AudioManager audioManager;
     private static VideoHandler<Object> objectVideoHandler;
     private ActivityVideoPlayerBinding binding;
@@ -33,13 +33,8 @@ public class VideoHandler<handler> implements MediaPlayer.OnPreparedListener, Se
         return objectVideoHandler == null ? objectVideoHandler = new VideoHandler<>() : objectVideoHandler;
     }
 
-    public VideoHandler<handler> with(Context context) {
-        this.context = context;
-        return this;
-    }
-
-    public VideoHandler<handler> window(Window window) {
-        this.window = window;
+    public VideoHandler<handler> with(Activity activity) {
+        this.activity = activity;
         return this;
     }
 
@@ -54,21 +49,53 @@ public class VideoHandler<handler> implements MediaPlayer.OnPreparedListener, Se
     }
 
     public void init() {
-        audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        updateVolumePercentage();
+        audioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
+
+        updateBrightness(getBrightness());
         updateBrightnessPercentage();
+        updateVolumePercentage();
+
         binding.videoView.setVideoURI(uri);
-        binding.videoView.setOnPreparedListener(this);
-        binding.seekBar.setOnSeekBarChangeListener(this);
+        binding.videoView.setOnPreparedListener(preparedListener);
+        binding.seekBar.setOnSeekBarChangeListener(seekBarChangeListener);
     }
 
-    @Override
-    public void onPrepared(MediaPlayer mp) {
-        mp.setOnSeekCompleteListener(this);
-        binding.seekBar.setMax(binding.videoView.getDuration());
-        updateDuration();
-        start();
-    }
+    MediaPlayer.OnPreparedListener preparedListener = new MediaPlayer.OnPreparedListener() {
+        @Override
+        public void onPrepared(MediaPlayer mp) {
+            mp.setOnSeekCompleteListener(seekCompleteListener);
+            binding.seekBar.setMax(binding.videoView.getDuration());
+            updateDuration();
+            start();
+        }
+    };
+
+    MediaPlayer.OnSeekCompleteListener seekCompleteListener = new MediaPlayer.OnSeekCompleteListener() {
+        @Override
+        public void onSeekComplete(MediaPlayer mp) {
+            if (binding.videoView.isPlaying())
+                start(); // after seek complete start video at new position if video is in playing mode
+            else updateDuration(); // after seek complete update duration if video is in pause mode
+        }
+    };
+
+    SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            if (fromUser)
+                binding.videoView.seekTo(progress);
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+            pause(); // pause the video on user start to seek
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+            // nothing to do
+        }
+    };
 
     public void start() {
         if (!binding.videoView.isPlaying()) {
@@ -113,9 +140,12 @@ public class VideoHandler<handler> implements MediaPlayer.OnPreparedListener, Se
         else if (!isIncrease && this.volume != 0) this.volume--;
     }
 
-    public void setBrightness(boolean isIncrease) {
+    public void setBrightness(float brightness, boolean isIncrease) {
 
+        updateBrightness(brightness);
         updateDisplayMessage(false);
+
+        Preference.setBrightness(activity, this.brightness);
 
         if (isIncrease && this.brightness != 100) this.brightness++;
         else if (!isIncrease && this.brightness != 0) this.brightness--;
@@ -138,15 +168,15 @@ public class VideoHandler<handler> implements MediaPlayer.OnPreparedListener, Se
         return audioManager.getStreamMinVolume(AudioManager.STREAM_MUSIC);
     }
 
-    public int getBrightness() {
+    public int getBrightnessInPercentage() {
         return brightness;
     }
 
-    public void updateVolumePercentage() {
-        volume = (getVolume() * 100) / getMaxVolume();
+    public int getBrightness() {
+        return Preference.getBrightness(activity);
     }
 
-    public void updateStreamVolume(boolean isVolumeRise) {
+    public void updateAudioManagerStreamVolume(boolean isVolumeRise) {
         audioManager.adjustStreamVolume(
                 AudioManager.STREAM_MUSIC,
                 isVolumeRise ? AudioManager.ADJUST_RAISE : AudioManager.ADJUST_LOWER,
@@ -155,10 +185,23 @@ public class VideoHandler<handler> implements MediaPlayer.OnPreparedListener, Se
         updateVolumePercentage();
     }
 
+    public void updateBrightness(float brightness) {
+
+        brightness = brightness < 0 ? 0 : Math.min(brightness, 1);
+
+        WindowManager.LayoutParams layoutParams = activity.getWindow().getAttributes();
+        layoutParams.screenBrightness = brightness;
+        activity.getWindow().setAttributes(layoutParams);
+    }
+
+    public void updateVolumePercentage() {
+        volume = (getVolume() * 100) / getMaxVolume();
+    }
+
     public void updateBrightnessPercentage() {
-        WindowManager.LayoutParams layoutParams = window.getAttributes();
-        layoutParams.screenBrightness = 1f;
-        window.setAttributes(layoutParams);
+        this.brightness = getBrightness();
+        float brightness = UI.getAbsFloatValueForBrightness(this.brightness);
+        updateBrightness(brightness);
     }
 
     private void updatePlayPauseButton() {
@@ -217,27 +260,4 @@ public class VideoHandler<handler> implements MediaPlayer.OnPreparedListener, Se
             }
         }
     };
-
-    @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        if (fromUser)
-            binding.videoView.seekTo(progress);
-    }
-
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-        pause(); // pause the video on user start to seek
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-        //nothing to do
-    }
-
-    @Override
-    public void onSeekComplete(MediaPlayer mp) {
-        if (binding.videoView.isPlaying())
-            start(); // after seek complete start video at new position if video is in playing mode
-        else updateDuration(); // after seek complete update duration if video is in pause mode
-    }
 }

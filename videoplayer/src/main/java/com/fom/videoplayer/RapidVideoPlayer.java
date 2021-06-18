@@ -13,6 +13,7 @@ import com.fom.videoplayer.assistant.RapidVideo;
 import com.fom.videoplayer.constant.Constant;
 import com.fom.videoplayer.databinding.ActivityVideoPlayerBinding;
 import com.fom.videoplayer.gesture.Gesture;
+import com.fom.videoplayer.ui.UI;
 
 public class RapidVideoPlayer extends AppCompatActivity {
 
@@ -55,7 +56,6 @@ public class RapidVideoPlayer extends AppCompatActivity {
 
         RapidVideo.videoHandler()
                 .with(this)
-                .window(getWindow())
                 .setBinding(binding)
                 .setVideoUri(uri)
                 .init();
@@ -148,16 +148,12 @@ public class RapidVideoPlayer extends AppCompatActivity {
         @Override
         public void onTopToBottomSwipeLeft(int value) {
 
-            int brightness = RapidVideo.videoHandler().getBrightness();
+            int percentage = RapidVideo.videoHandler().getBrightnessInPercentage();
 
-            WindowManager.LayoutParams layout = getWindow().getAttributes();
-
-            if (brightness >= 0 && brightness <= 100) {
-                layout.screenBrightness = (float) (1.0d - (Math.log((double) 100 - brightness) / Math.log(100.0d)));
-                RapidVideo.videoHandler().setBrightness(false);
+            if (percentage >= 0 && percentage <= 100) {
+                float brightness = UI.getAbsFloatValueForBrightness(percentage);
+                RapidVideo.videoHandler().setBrightness(brightness, false);
             }
-
-            getWindow().setAttributes(layout);
         }
 
         @Override
@@ -175,17 +171,12 @@ public class RapidVideoPlayer extends AppCompatActivity {
         @Override
         public void onBottomToTopSwipeLeft(int value) {
 
-            int brightness = RapidVideo.videoHandler().getBrightness();
+            int percentage = RapidVideo.videoHandler().getBrightnessInPercentage();
 
-            WindowManager.LayoutParams layout = getWindow().getAttributes();
-
-            if (brightness >= 0 && brightness <= 100) {
-                layout.screenBrightness = (float) (1.0d - (Math.log((double) 100 - brightness) / Math.log(100.0d)));
-                System.out.println(brightness + "-" + layout.screenBrightness);
-                RapidVideo.videoHandler().setBrightness(true);
+            if (percentage >= 0 && percentage <= 100) {
+                float brightness = UI.getAbsFloatValueForBrightness(percentage);
+                RapidVideo.videoHandler().setBrightness(brightness, true);
             }
-
-            getWindow().setAttributes(layout);
         }
     };
 
@@ -193,10 +184,10 @@ public class RapidVideoPlayer extends AppCompatActivity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode) {
             case KeyEvent.KEYCODE_VOLUME_UP:
-                RapidVideo.videoHandler().updateStreamVolume(true);
+                RapidVideo.videoHandler().updateAudioManagerStreamVolume(true);
                 return true;
             case KeyEvent.KEYCODE_VOLUME_DOWN:
-                RapidVideo.videoHandler().updateStreamVolume(false);
+                RapidVideo.videoHandler().updateAudioManagerStreamVolume(false);
                 return true;
             default:
                 break;
