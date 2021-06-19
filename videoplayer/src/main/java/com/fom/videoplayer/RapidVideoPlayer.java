@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.fom.videoplayer.assistant.RapidVideo;
 import com.fom.videoplayer.constant.Constant;
 import com.fom.videoplayer.databinding.ActivityVideoPlayerBinding;
+import com.fom.videoplayer.enums.AspectRatio;
 import com.fom.videoplayer.gesture.Gesture;
 import com.fom.videoplayer.ui.UI;
 
@@ -42,7 +43,7 @@ public class RapidVideoPlayer extends AppCompatActivity {
         binding.ivPrev.setOnClickListener(this::onPrevClick);
         binding.ivPlayPause.setOnClickListener(this::onPlayPauseClick);
         binding.ivNext.setOnClickListener(this::onNextClick);
-        binding.ivRatio.setOnClickListener(this::onRatioClick);
+        binding.ivRatio.setOnClickListener(this::onAspectRatioClick);
 
         if (binding.ivBackward != null)
             binding.ivBackward.setOnClickListener(this::onBackwardClick);
@@ -54,11 +55,7 @@ public class RapidVideoPlayer extends AppCompatActivity {
         String path = getIntent().getStringExtra(Constant.intent_extra_path);
         Uri uri = path == null ? getIntent().getParcelableExtra(Constant.intent_extra_uri) : Uri.parse(path);
 
-        RapidVideo.videoHandler()
-                .with(this)
-                .setBinding(binding)
-                .setVideoUri(uri)
-                .init();
+        RapidVideo.videoHandler().with(this).setBinding(binding).setVideoUri(uri).init();
     }
 
     private void initializeGesture() {
@@ -91,7 +88,19 @@ public class RapidVideoPlayer extends AppCompatActivity {
     private void onNextClick(View view) {
     }
 
-    private void onRatioClick(View view) {
+    private void onAspectRatioClick(View view) {
+        AspectRatio ratio = RapidVideo.videoHandler().getAspectRatio();
+        switch (ratio) {
+            case one_one:
+                RapidVideo.videoHandler().setAspectRatio(AspectRatio.nine_sixteen);
+                break;
+            case nine_sixteen:
+                RapidVideo.videoHandler().setAspectRatio(AspectRatio.sixteen_nine);
+                break;
+            case sixteen_nine:
+                RapidVideo.videoHandler().setAspectRatio(AspectRatio.one_one);
+                break;
+        }
     }
 
     private void onBackwardClick(View view) {
@@ -104,13 +113,22 @@ public class RapidVideoPlayer extends AppCompatActivity {
         RapidVideo.videoHandler().seekTo(mSec);
     }
 
+    /**
+     * Gesture listener {@link Gesture} to listen video screen gestures.
+     */
     private final Gesture.GestureListener listener = new Gesture.GestureListener() {
 
+        /**
+         * Double tap on video screen.
+         */
         @Override
         public void onDoubleTap() {
             System.out.println("double tap");
         }
 
+        /**
+         * Single tap on video screen.
+         */
         @Override
         public void onSingleTap() {
             if (binding.contentPanel.getVisibility() == View.VISIBLE) {
@@ -121,18 +139,34 @@ public class RapidVideoPlayer extends AppCompatActivity {
             binding.bottomPanel.setVisibility(binding.bottomPanel.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
         }
 
+        /**
+         * Swipe from left hand side to right hand side.
+         *
+         * @param value - negative argument, do minus ('-') so it's become positive argument
+         *              and add into video current position to go forward 10 sec.
+         */
         @Override
         public void onLeftToRightSwipe(int value) {
-            int mSec = binding.videoView.getCurrentPosition() - value; // value variable is negative, do minus so it's become positive variable
+            int mSec = binding.videoView.getCurrentPosition() - value;
             RapidVideo.videoHandler().seekTo(mSec);
         }
 
+        /**
+         * Swipe from right hand side to left hand side.
+         *
+         * @param value - positive argument, do minus ('-') with video current position
+         *              to go backward 10 sec.
+         */
         @Override
         public void onRightToLeftSwipe(int value) {
             int mSec = binding.videoView.getCurrentPosition() - value;
             RapidVideo.videoHandler().seekTo(mSec);
         }
 
+        /**
+         * Swipe from top to bottom on right hand side screen.
+         * Too decrease the volume.
+         */
         @Override
         public void onTopToBottomSwipeRight(int value) {
 
@@ -145,6 +179,10 @@ public class RapidVideoPlayer extends AppCompatActivity {
             }
         }
 
+        /**
+         * Swipe from top to bottom on left hand side screen.
+         * Too decrease the brightness.
+         */
         @Override
         public void onTopToBottomSwipeLeft(int value) {
 
@@ -156,6 +194,10 @@ public class RapidVideoPlayer extends AppCompatActivity {
             }
         }
 
+        /**
+         * Swipe from bottom to top on right hand side screen.
+         * Too increase the volume.
+         */
         @Override
         public void onBottomToTopSwipeRight(int value) {
 
@@ -168,6 +210,10 @@ public class RapidVideoPlayer extends AppCompatActivity {
             }
         }
 
+        /**
+         * Swipe from bottom to top on left hand side screen.
+         * Too increase the brightness.
+         */
         @Override
         public void onBottomToTopSwipeLeft(int value) {
 
@@ -180,6 +226,9 @@ public class RapidVideoPlayer extends AppCompatActivity {
         }
     };
 
+    /**
+     * To listen system volume when user adjust volume using phone volume button.
+     */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode) {

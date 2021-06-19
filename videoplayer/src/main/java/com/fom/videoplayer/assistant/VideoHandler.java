@@ -14,10 +14,13 @@ import android.widget.SeekBar;
 
 import com.fom.videoplayer.R;
 import com.fom.videoplayer.databinding.ActivityVideoPlayerBinding;
+import com.fom.videoplayer.enums.AspectRatio;
+import com.fom.videoplayer.model.MetaData;
 import com.fom.videoplayer.ui.Preference;
 import com.fom.videoplayer.ui.UI;
 
 import androidx.annotation.RequiresApi;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class VideoHandler<handler> {
 
@@ -25,7 +28,9 @@ public class VideoHandler<handler> {
     private AudioManager audioManager;
     private static VideoHandler<Object> objectVideoHandler;
     private ActivityVideoPlayerBinding binding;
+    private MetaData metaData;
     private Uri uri;
+    private AspectRatio ratio;
     private int volume = 100;
     private int brightness = 100;
 
@@ -50,7 +55,9 @@ public class VideoHandler<handler> {
 
     public void init() {
         audioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
+        metaData = UI.getVideoMetaData(activity, uri);
 
+        updateAspectRatio();
         updateBrightness(getBrightness());
         updateBrightnessPercentage();
         updateVolumePercentage();
@@ -151,6 +158,13 @@ public class VideoHandler<handler> {
         else if (!isIncrease && this.brightness != 0) this.brightness--;
     }
 
+    public void setAspectRatio(AspectRatio ratio) {
+        this.ratio = ratio;
+        ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) binding.videoView.getLayoutParams();
+        params.dimensionRatio = ratio.getRatio();
+        binding.videoView.setLayoutParams(params);
+    }
+
     public int getVolumeInPercentage() {
         return volume;
     }
@@ -176,6 +190,10 @@ public class VideoHandler<handler> {
         return Preference.getBrightness(activity);
     }
 
+    public AspectRatio getAspectRatio() {
+        return ratio;
+    }
+
     public void updateAudioManagerStreamVolume(boolean isVolumeRise) {
         audioManager.adjustStreamVolume(
                 AudioManager.STREAM_MUSIC,
@@ -183,6 +201,12 @@ public class VideoHandler<handler> {
                 AudioManager.FLAG_PLAY_SOUND | AudioManager.FLAG_SHOW_UI
         );
         updateVolumePercentage();
+    }
+
+    private void updateAspectRatio() {
+        AspectRatio ratio = metaData.getWidth() == metaData.getHeight() ? AspectRatio.one_one :
+                metaData.getWidth() > metaData.getHeight() ? AspectRatio.sixteen_nine : AspectRatio.nine_sixteen;
+        setAspectRatio(ratio);
     }
 
     public void updateBrightness(float brightness) {

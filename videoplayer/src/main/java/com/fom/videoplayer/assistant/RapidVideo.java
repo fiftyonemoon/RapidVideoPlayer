@@ -9,4 +9,5 @@ public class RapidVideo {
     public static VideoHandler<Object> videoHandler() {
         return VideoHandler.videoHandler();
     }
+
 }
