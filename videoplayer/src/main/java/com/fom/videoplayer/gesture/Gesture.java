@@ -40,7 +40,7 @@ public class Gesture {
     /**
      * Detector constructor.
      */
-    public static Detector<Object> detect() {
+    public static Detector<Object> detector() {
         return new Detector<>();
     }
 
@@ -57,6 +57,7 @@ public class Gesture {
         private boolean isMoving;
         private boolean isHorizontalSwipe;
         private boolean isVerticalSwipe;
+        private boolean isDisable;
 
         public Detector<detector> view(View view) {
             view.setOnTouchListener(this);
@@ -67,35 +68,43 @@ public class Gesture {
             this.listener = listener;
         }
 
-        public void onDoubleTap() {
+        public void setDisable(boolean isDisable) {
+            this.isDisable = isDisable;
+        }
+
+        public boolean isDisable() {
+            return isDisable;
+        }
+
+        private void onDoubleTap() {
             if (listener != null) listener.onDoubleTap();
         }
 
-        public void onSingleTap() {
+        private void onSingleTap() {
             if (listener != null) listener.onSingleTap();
         }
 
-        public void onLeftToRightSwipe(int value) {
+        private void onLeftToRightSwipe(int value) {
             if (listener != null) listener.onLeftToRightSwipe(value);
         }
 
-        public void onRightToLeftSwipe(int value) {
+        private void onRightToLeftSwipe(int value) {
             if (listener != null) listener.onRightToLeftSwipe(value);
         }
 
-        public void onTopToBottomSwipeRight(int value) {
+        private void onTopToBottomSwipeRight(int value) {
             if (listener != null) listener.onTopToBottomSwipeRight(value);
         }
 
-        public void onTopToBottomSwipeLeft(int value) {
+        private void onTopToBottomSwipeLeft(int value) {
             if (listener != null) listener.onTopToBottomSwipeLeft(value);
         }
 
-        public void onBottomToTopSwipeRight(int value) {
+        private void onBottomToTopSwipeRight(int value) {
             if (listener != null) listener.onBottomToTopSwipeRight(value);
         }
 
-        public void onBottomToTopSwipeLeft(int value) {
+        private void onBottomToTopSwipeLeft(int value) {
             if (listener != null) listener.onBottomToTopSwipeLeft(value);
         }
 
@@ -106,6 +115,8 @@ public class Gesture {
             switch (event.getAction() & MotionEvent.ACTION_MASK) {
 
                 case MotionEvent.ACTION_DOWN:
+
+                    if (isDisable) break; // if gesture disable return
 
                     if (isDoubleTap(millis)) {
                         isDoubleTapConfirmed = true;
@@ -120,6 +131,8 @@ public class Gesture {
                     break;
 
                 case MotionEvent.ACTION_MOVE:
+
+                    if (isDisable) break; // if gesture disable return
 
                     //get x and y position on move
                     mx = event.getX();
@@ -209,6 +222,14 @@ public class Gesture {
 
                 case MotionEvent.ACTION_UP:
 
+                    // if gesture is disable and user tap on screen
+                    if (isDisable) {
+
+                        onSingleTap(); // detect single tap to unlock screen
+
+                        break;
+                    }
+
                     if (isMoving) {
 
                         isMoving = false;
@@ -247,5 +268,4 @@ public class Gesture {
             }
         };
     }
-
 }

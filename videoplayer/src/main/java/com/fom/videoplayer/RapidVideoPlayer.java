@@ -2,6 +2,8 @@ package com.fom.videoplayer;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
@@ -19,6 +21,7 @@ import com.fom.videoplayer.ui.UI;
 public class RapidVideoPlayer extends AppCompatActivity {
 
     private ActivityVideoPlayerBinding binding;
+    private Gesture.Detector<Object> gestureDetector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,10 +43,11 @@ public class RapidVideoPlayer extends AppCompatActivity {
         binding.ivExtra.setOnClickListener(this::onExtraClick);
         binding.ivMore.setOnClickListener(this::onMoreClick);
         binding.ivLock.setOnClickListener(this::onLockClick);
+        binding.ivUnlock.setOnClickListener(this::onLockClick);
         binding.ivPrev.setOnClickListener(this::onPrevClick);
         binding.ivPlayPause.setOnClickListener(this::onPlayPauseClick);
         binding.ivNext.setOnClickListener(this::onNextClick);
-        binding.ivRatio.setOnClickListener(this::onAspectRatioClick);
+        binding.ivAspectRatio.setOnClickListener(this::onAspectRatioClick);
 
         if (binding.ivBackward != null)
             binding.ivBackward.setOnClickListener(this::onBackwardClick);
@@ -59,7 +63,8 @@ public class RapidVideoPlayer extends AppCompatActivity {
     }
 
     private void initializeGesture() {
-        Gesture.detect().view(binding.gesturePanel).listen(listener);
+        gestureDetector = Gesture.detector();
+        gestureDetector.view(binding.gesturePanel).listen(listener);
     }
 
     private void onBackClick(View view) {
@@ -74,9 +79,12 @@ public class RapidVideoPlayer extends AppCompatActivity {
     }
 
     private void onLockClick(View view) {
+        listener.onSingleTap(); // hide content views first
+        gestureDetector.setDisable(!gestureDetector.isDisable()); // enable/disable gesture
     }
 
     private void onPrevClick(View view) {
+
     }
 
     private void onPlayPauseClick(View view) {
@@ -128,13 +136,27 @@ public class RapidVideoPlayer extends AppCompatActivity {
 
         /**
          * Single tap on video screen.
+         * Show video view only, hide other views.
          */
         @Override
         public void onSingleTap() {
+
+            if (gestureDetector.isDisable()) {
+
+                // show unlock view
+                binding.ivUnlock.setVisibility(View.VISIBLE);
+
+                // after 1 sec hide unlock view
+                RapidVideo.videoHandler().hideUnlockView();
+
+                return;
+            } else binding.ivUnlock.setVisibility(View.GONE);
+
             if (binding.contentPanel.getVisibility() == View.VISIBLE) {
                 binding.contentPanel.setVisibility(View.GONE);
                 return;
             }
+
             binding.topPanel.setVisibility(binding.topPanel.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
             binding.bottomPanel.setVisibility(binding.bottomPanel.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
         }
@@ -258,7 +280,7 @@ public class RapidVideoPlayer extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+        if (!gestureDetector.isDisable()) super.onBackPressed();
     }
 
 }

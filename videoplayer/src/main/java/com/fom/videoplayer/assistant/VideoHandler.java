@@ -5,7 +5,6 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
@@ -19,7 +18,6 @@ import com.fom.videoplayer.model.MetaData;
 import com.fom.videoplayer.ui.Preference;
 import com.fom.videoplayer.ui.UI;
 
-import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class VideoHandler<handler> {
@@ -67,7 +65,7 @@ public class VideoHandler<handler> {
         binding.seekBar.setOnSeekBarChangeListener(seekBarChangeListener);
     }
 
-    MediaPlayer.OnPreparedListener preparedListener = new MediaPlayer.OnPreparedListener() {
+    private final MediaPlayer.OnPreparedListener preparedListener = new MediaPlayer.OnPreparedListener() {
         @Override
         public void onPrepared(MediaPlayer mp) {
             mp.setOnSeekCompleteListener(seekCompleteListener);
@@ -77,7 +75,7 @@ public class VideoHandler<handler> {
         }
     };
 
-    MediaPlayer.OnSeekCompleteListener seekCompleteListener = new MediaPlayer.OnSeekCompleteListener() {
+    private final MediaPlayer.OnSeekCompleteListener seekCompleteListener = new MediaPlayer.OnSeekCompleteListener() {
         @Override
         public void onSeekComplete(MediaPlayer mp) {
             if (binding.videoView.isPlaying())
@@ -86,7 +84,7 @@ public class VideoHandler<handler> {
         }
     };
 
-    SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
+    private final SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             if (fromUser)
@@ -107,7 +105,7 @@ public class VideoHandler<handler> {
     public void start() {
         if (!binding.videoView.isPlaying()) {
             binding.videoView.start();
-            handler.postDelayed(runnable, 100);
+            seekHandler.postDelayed(seekRunnable, 100);
             updatePlayPauseButton();
         }
     }
@@ -115,7 +113,7 @@ public class VideoHandler<handler> {
     public void pause() {
         if (binding.videoView.isPlaying()) {
             binding.videoView.pause();
-            handler.removeCallbacks(runnable);
+            seekHandler.removeCallbacks(seekRunnable);
             updatePlayPauseButton();
         }
     }
@@ -175,11 +173,6 @@ public class VideoHandler<handler> {
 
     public int getMaxVolume() {
         return audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.P)
-    public int getMinVolume() {
-        return audioManager.getStreamMinVolume(AudioManager.STREAM_MUSIC);
     }
 
     public int getBrightnessInPercentage() {
@@ -242,7 +235,7 @@ public class VideoHandler<handler> {
     }
 
     private void updateDisplayMessage(boolean isVolume) {
-        String percentage = (isVolume ? getVolumeInPercentage() : brightness) + "%";
+        String percentage = (isVolume ? getVolumeInPercentage() : getBrightnessInPercentage()) + "%";
 
         binding.tvPercentage.setText(percentage);
         binding.tvPercentage.setVisibility(View.VISIBLE);
@@ -261,6 +254,19 @@ public class VideoHandler<handler> {
         messageHandler.postDelayed(messageRunnable, 500);
     }
 
+    public void hideUnlockView() {
+        unlockHandler.removeCallbacks(unlockRunnable);
+        unlockHandler.postDelayed(unlockRunnable, 1000);
+    }
+
+    private final Handler unlockHandler = new Handler(Looper.myLooper());
+    private final Runnable unlockRunnable = new Runnable() {
+        @Override
+        public void run() {
+            binding.ivUnlock.setVisibility(View.GONE);
+        }
+    };
+
     private final Handler messageHandler = new Handler(Looper.myLooper());
     private final Runnable messageRunnable = new Runnable() {
         @Override
@@ -269,19 +275,20 @@ public class VideoHandler<handler> {
         }
     };
 
-    private final Handler handler = new Handler();
-    private final Runnable runnable = new Runnable() {
+    private final Handler seekHandler = new Handler();
+    private final Runnable seekRunnable = new Runnable() {
         @Override
         public void run() {
 
             if (binding.videoView.isPlaying() && binding.videoView.getCurrentPosition() <= binding.videoView.getDuration()) {
                 updateSeekBar();
                 updateDuration();
-                handler.postDelayed(runnable, 100);
+                seekHandler.postDelayed(seekRunnable, 100);
             } else {
                 // after video complete do things
                 updatePlayPauseButton();
             }
         }
     };
+
 }

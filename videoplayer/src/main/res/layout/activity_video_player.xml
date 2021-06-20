@@ -145,10 +145,25 @@
 
     </HorizontalScrollView>
 
+    <ImageView
+        android:id="@+id/ivUnlock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/black_circle"
+        android:src="@drawable/ic_lock"
+        android:padding="16dp"
+        android:layout_margin="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/bottomPanel"
+        tools:ignore="ContentDescription"
+        android:visibility="gone"/>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/bottomPanel"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:paddingTop="16dp"
+        android:paddingBottom="0dp"
         android:background="@drawable/black_gradient_bottom_top"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -201,13 +216,13 @@
             android:padding="16dp"
             android:src="@drawable/ic_next"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/ivRatio"
+            app:layout_constraintEnd_toStartOf="@+id/ivAspectRatio"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/ivPlayPause"
             tools:ignore="ContentDescription" />
 
         <ImageView
-            android:id="@+id/ivRatio"
+            android:id="@+id/ivAspectRatio"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackgroundBorderless"
@@ -218,6 +233,17 @@
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/ivNext"
             tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/tvCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="16dp"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toTopOf="@id/ivLock"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="00:17" />
 
         <SeekBar
             android:id="@+id/seekBar"
@@ -236,20 +262,9 @@
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp"
             android:textColor="@color/white"
-            app:layout_constraintBottom_toTopOf="@id/ivRatio"
+            app:layout_constraintBottom_toTopOf="@id/ivAspectRatio"
             app:layout_constraintEnd_toEndOf="parent"
             tools:text="04:12" />
-
-        <TextView
-            android:id="@+id/tvCount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="16dp"
-            android:textColor="@color/white"
-            app:layout_constraintBottom_toTopOf="@id/ivLock"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:text="00:17" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
