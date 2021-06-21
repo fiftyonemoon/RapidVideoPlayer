@@ -60,6 +60,7 @@ public class VideoHandler<handler> {
         updateBrightnessPercentage();
         updateVolumePercentage();
 
+        binding.tvTitle.setText(metaData.getName());
         binding.videoView.setVideoURI(uri);
         binding.videoView.setOnPreparedListener(preparedListener);
         binding.seekBar.setOnSeekBarChangeListener(seekBarChangeListener);
@@ -254,9 +255,19 @@ public class VideoHandler<handler> {
         messageHandler.postDelayed(messageRunnable, 500);
     }
 
+    public void updateContentViews() {
+        if (binding.contentPanel.getVisibility() == View.VISIBLE) {
+            binding.contentPanel.setVisibility(View.GONE);
+            return;
+        }
+
+        binding.topPanel.setVisibility(binding.topPanel.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+        binding.bottomPanel.setVisibility(binding.bottomPanel.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+    }
+
     public void hideUnlockView() {
         unlockHandler.removeCallbacks(unlockRunnable);
-        unlockHandler.postDelayed(unlockRunnable, 1000);
+        unlockHandler.postDelayed(unlockRunnable, 1500);
     }
 
     private final Handler unlockHandler = new Handler(Looper.myLooper());

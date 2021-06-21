@@ -1,9 +1,9 @@
 package com.fom.videoplayer;
 
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
@@ -48,6 +48,7 @@ public class RapidVideoPlayer extends AppCompatActivity {
         binding.ivPlayPause.setOnClickListener(this::onPlayPauseClick);
         binding.ivNext.setOnClickListener(this::onNextClick);
         binding.ivAspectRatio.setOnClickListener(this::onAspectRatioClick);
+        binding.ivOrientation.setOnClickListener(this::onOrientationClick);
 
         if (binding.ivBackward != null)
             binding.ivBackward.setOnClickListener(this::onBackwardClick);
@@ -76,11 +77,12 @@ public class RapidVideoPlayer extends AppCompatActivity {
     }
 
     private void onMoreClick(View view) {
+
     }
 
     private void onLockClick(View view) {
-        listener.onSingleTap(); // hide content views first
         gestureDetector.setDisable(!gestureDetector.isDisable()); // enable/disable gesture
+        RapidVideo.videoHandler().updateContentViews(); // show/hide content views
     }
 
     private void onPrevClick(View view) {
@@ -94,6 +96,7 @@ public class RapidVideoPlayer extends AppCompatActivity {
     }
 
     private void onNextClick(View view) {
+
     }
 
     private void onAspectRatioClick(View view) {
@@ -121,6 +124,11 @@ public class RapidVideoPlayer extends AppCompatActivity {
         RapidVideo.videoHandler().seekTo(mSec);
     }
 
+    private void onOrientationClick(View view) {
+        int orientation = getResources().getConfiguration().orientation;
+        setRequestedOrientation(orientation == Configuration.ORIENTATION_LANDSCAPE ? ActivityInfo.SCREEN_ORIENTATION_PORTRAIT : ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+    }
+
     /**
      * Gesture listener {@link Gesture} to listen video screen gestures.
      */
@@ -136,7 +144,7 @@ public class RapidVideoPlayer extends AppCompatActivity {
 
         /**
          * Single tap on video screen.
-         * Show video view only, hide other views.
+         * Show video view only, hide content views.
          */
         @Override
         public void onSingleTap() {
@@ -152,13 +160,7 @@ public class RapidVideoPlayer extends AppCompatActivity {
                 return;
             } else binding.ivUnlock.setVisibility(View.GONE);
 
-            if (binding.contentPanel.getVisibility() == View.VISIBLE) {
-                binding.contentPanel.setVisibility(View.GONE);
-                return;
-            }
-
-            binding.topPanel.setVisibility(binding.topPanel.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
-            binding.bottomPanel.setVisibility(binding.bottomPanel.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+            RapidVideo.videoHandler().updateContentViews();
         }
 
         /**
